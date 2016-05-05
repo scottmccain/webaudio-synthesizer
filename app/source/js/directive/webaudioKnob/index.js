@@ -23,7 +23,7 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
             sensitivity: '@',
             src: '@',
             valuetip: '@',
-            enable: '@',            
+            disable: '@',            
             onChange: '&'
         },
         templateUrl: viewUrl('/partials/templates/web-knob/index.html'),
@@ -32,17 +32,6 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
         controller: function () {
             var self = this;
  
-
-            self.ctrlStep = 1;
-            
-            self.touchend = function(e) {
-                
-            };
-            
-            self.touchstart = function(e) {
-                console.log('touchstart!: ', e);    
-            };
-            
             self.setValue = function(value) {
                 
                 // here we set the value on the controller
@@ -68,7 +57,20 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
         link: function(scope, elem, attrs, ngModelCtrl) {     
             
             var timeoutPromise = null;
-            
+			var knb = elem[0].querySelector('#wac-knob');
+			
+			function cancel(e) {
+                var ctrl = scope.vm;
+                
+				ctrl.press = ctrl.vtflag = 0;
+				showtip();
+				ctrl.startPosX = ctrl.startPosY = null;
+				knb.removeEventListener('touchmove', pointermove, true);
+				knb.removeEventListener('mouseup', cancel, true);
+				knb.removeEventListener('touchend', cancel, true);
+				knb.removeEventListener('touchcancel', cancel, true);
+			}
+			
             function redraw() {
                 
                 var ctrl = scope.vm;
@@ -78,9 +80,6 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 					var offset = ~~(ctrl.sprites * (ctrl.value - ctrl.min) / range) * ctrl.height;
 					ctrl.knobStyle.backgroundPosition = "0px -" + offset + "px";
 					ctrl.knobStyle.transform = 'rotate(0deg)';
-					
-					//this.$['wac-knob'].style.backgroundPosition= "0px -" + offset + "px";
-					//this.$['wac-knob'].style.transform = 'rotate(0deg)';
 				}
 				else {
 					var deg = 270*((ctrl.value-ctrl.min)/range-0.5);
@@ -106,6 +105,41 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
                 });
             }
             
+            function pointerdown(e) {
+            	
+            	console.log('pointer down!');
+            	
+            	var ctrl = scope.vm;
+            	
+				if(!ctrl.enable)
+					return;
+					
+				if(e.touches)
+					e = e.touches[0];
+
+				console.log(e);
+				
+				if(e.ctrlKey || e.metaKey) {
+					ctrl.setValue(parseFloat(ctrl.defvalue));
+				}
+				else {
+					ctrl.startPosX = e.pageX;
+					ctrl.startPosY = e.pageY;
+					ctrl.startVal = ctrl.value;
+					knb.addEventListener('mousemove', pointermove, true);
+					knb.addEventListener('touchmove', pointermove, true);
+				}
+				knb.addEventListener('mouseup', cancel, true);
+				knb.addEventListener('touchend', cancel, true);
+				knb.addEventListener('touchcancel', cancel, true);
+				knb.press = knb.vtflag = 1;
+				knb.ttflag = 0;
+				
+				showtip();
+				e.preventDefault();            	
+            }
+           
+            
             function pointerover(e) {
                 
             }
@@ -115,12 +149,17 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
             }
             
 			function pointermove(e) {
-			    
+
+				e.preventDefault();
+				
 			    var ctrl = scope.vm;
 			    
 				if(e.touches)
 					e = e.touches[0];
-				if(scope.vm.lastShift !== e.shiftKey) {
+					
+			    console.log('pointer move: ', e);
+			    
+			    if(scope.vm.lastShift !== e.shiftKey) {
 					ctrl.lastShift = e.shiftKey;
 					ctrl.startPosX = e.pageX;
 					ctrl.startPosY = e.pageY;
@@ -142,12 +181,14 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 				ctrl.setValue(newValue);
 				
 				redraw();
-				
-				e.preventDefault();
+
 			}
 			
             function wheel(e) {
 
+				if(!ctrl.enable)
+					return;
+					
 				var delta = 0;
 				if(e.wheelDelta)
 					delta = e.wheelDelta/120;
@@ -179,8 +220,6 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
             
             var ctrl = scope.vm;
             
-            var knb = elem[0].querySelector('#wac-knob');
-
             knb.addEventListener('click', function() {
                 $log.debug('clicked!');
             });
@@ -189,6 +228,9 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
             knb.addEventListener('mousewheel', wheel, true);
 		    knb.addEventListener('mouseout',pointerout,false);
             knb.addEventListener('mouseover',pointerover,false);
+            
+            elem.on('mousedown', pointerdown);
+            elem.on('touchstart', pointerdown);
             
             var src = attrs.src;
             if(!src) {
@@ -210,6 +252,8 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 			ctrl.startPosX = null;
 			ctrl.startPosY = null;
 			ctrl.startVal = 0;
+			ctrl.enable = !attrs.disable;
+			
 
 			if(ctrl.step && ctrl.step < 1) {
                 for(var n = ctrl.step ; n < 1; n *= 10)
@@ -227,9 +271,9 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 				ctrl.ctlStep = log2(ctrl.step);
 				if (ctrl.ctlStep === 0)
 					ctrl.ctlStep = 0.0001;
-			} else
+			} else {
 				ctrl.setValue(ctrl.value);
-				
+			}				
 
 			
 			if(typeof(ctrl.onChange) === 'function') {

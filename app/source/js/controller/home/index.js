@@ -4,13 +4,17 @@ function HomeController(alertify) {
     
     var vm = this;
     
-    vm.message = "and Hello from the controller too!";
-    alertify.success('Alertify loaded correctly');
     
-    vm.frequency = 0;
+    vm.mod = {};
+    
+    vm.mod.frequency = 0;
+    vm.mod.shape = null;
+    
+    
+    vm.mod.waveshapes = [{name: "sine", value: 0}, {name: "square", value: 1}, {name:"saw", value: 2}, {name:"triangle", value: 3}];
     
     vm.updateVoices = function() {
-        console.log('frequency: ', vm.frequency);
+        console.log('frequency: ', vm.mod.frequency);
     };
 }
 

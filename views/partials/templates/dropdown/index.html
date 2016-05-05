@@ -1,0 +1,10 @@
+<div class="btn-group" uib-dropdown is-open="status.isopen">
+    <button id="menu-button" type="button" class="btn btn-primary" uib-dropdown-toggle ng-disabled="disabled">
+        {{vm.selectedValue == null ? vm.defaultText : vm.selectedValue.display}} <span class="caret"></span>
+    </button>
+    <ul class="dropdown-menu" uib-dropdown-menu role="menu" aria-labelledby="menu-button">
+        <li role="menu-item" ng-repeat="item in vm.items" ng-class="item.classes">
+            <a ng-click="vm.selectValue(item)">{{item.display}}</a>
+        </li>
+    </ul>
+</div>
