@@ -6,6 +6,12 @@ function HomeController(alertify) {
     
     vm.message = "and Hello from the controller too!";
     alertify.success('Alertify loaded correctly');
+    
+    vm.frequency = 0;
+    
+    vm.updateVoices = function() {
+        console.log('frequency: ', vm.frequency);
+    };
 }
 
 // love our dependency injection and we are now safe from obfuscation

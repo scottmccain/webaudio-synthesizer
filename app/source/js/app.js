@@ -6,9 +6,10 @@ require('angular-ui-router');
 require('angular-router-browserify')(angular);
 require('angular-bootstrap-npm');
 require('ngalertify');
+require('angular-animate');
 
 
-var app = angular.module('angular-application', ['ui.router', 'ui.bootstrap', 'ngAlertify', require('angular-resource')]);
+var app = angular.module('angular-application', ['ui.router', 'ui.bootstrap', 'ngAlertify', require('angular-resource'), 'ngAnimate']);
 
 
 app.constant('viewUrl', function(relativePath) {

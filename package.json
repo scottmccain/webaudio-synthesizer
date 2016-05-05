@@ -43,6 +43,7 @@
     "vinyl-transform": "^1.0.0"
   },
   "dependencies": {
+    "angular-animate": "^1.5.5",
     "angular-resource": "^1.5.1",
     "angular-ui-router": "^0.2.18",
     "backstretch": "^1.2.2",

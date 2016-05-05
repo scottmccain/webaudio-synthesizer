@@ -57,6 +57,7 @@ var app_entry = ['./app/source/js/app.js'];
 gulp.task('build-js', function() {
     
   return gulp.src( app_entry )
+    .pipe(plugins.plumber())
     .pipe(browserify())
     //.pipe(plugins.uglify())
     .pipe(plugins.concat('scripts.min.js'))
@@ -65,6 +66,7 @@ gulp.task('build-js', function() {
 
 gulp.task('lint', function() {
     return gulp.src('./app/source/js/**/*.js')
+    .pipe(plugins.plumber())
     .pipe(plugins.jshint())
     .pipe(plugins.jshint.reporter(stylish));
 });
