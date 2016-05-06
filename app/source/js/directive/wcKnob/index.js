@@ -5,7 +5,7 @@ function log2(num) {
 	return log;
 } 
 
-function WebaudioKnob($parse, $log, $timeout, $window, viewUrl) {
+function WebControlKnob($parse, $log, $timeout, $window, viewUrl) {
  return {
         restrict: 'E',
         scope: {
@@ -291,6 +291,6 @@ function WebaudioKnob($parse, $log, $timeout, $window, viewUrl) {
 }
 
 // love our dependency injection and we are now safe from obfuscation
-WebaudioKnob.$inject = ['$parse', '$log', '$timeout', '$window', 'viewUrl'];
+WebControlKnob.$inject = ['$parse', '$log', '$timeout', '$window', 'viewUrl'];
 
-module.exports = WebaudioKnob;
+module.exports = WebControlKnob;
