@@ -5,14 +5,14 @@ function log2(num) {
 	return log;
 } 
 
-function WebaudioKnob($parse, $log, $timeout, viewUrl) {
+function WebaudioKnob($parse, $log, $timeout, $window, viewUrl) {
  return {
         restrict: 'E',
         scope: {
             value:'=',
             units: '@',
             log: '@',
-            defvalue: '@',
+            defaultValue: '@',
             min: '@',
             max: '@',
             step: '@',
@@ -59,17 +59,17 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
             var timeoutPromise = null;
 			var knb = elem[0].querySelector('#wac-knob');
 			
-			function cancel(e) {
+			var cancel = function(e) {
                 var ctrl = scope.vm;
-                
-				ctrl.press = ctrl.vtflag = 0;
+
 				showtip();
-				ctrl.startPosX = ctrl.startPosY = null;
-				knb.removeEventListener('touchmove', pointermove, true);
-				knb.removeEventListener('mouseup', cancel, true);
-				knb.removeEventListener('touchend', cancel, true);
-				knb.removeEventListener('touchcancel', cancel, true);
-			}
+				ctrl.startPosX = ctrl.startPosY = ctrl.lastShift = null;
+				$window.removeEventListener('touchmove', pointermove, true);
+				$window.removeEventListener('mousemove', pointermove, true);
+				$window.removeEventListener('mouseup', cancel, true);
+				$window.removeEventListener('touchend', cancel, true);
+				$window.removeEventListener('touchcancel', cancel, true);
+			};
 			
             function redraw() {
                 
@@ -105,9 +105,7 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
                 });
             }
             
-            function pointerdown(e) {
-            	
-            	console.log('pointer down!');
+            var pointerdown = function(e) {
             	
             	var ctrl = scope.vm;
             	
@@ -117,8 +115,6 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 				if(e.touches)
 					e = e.touches[0];
 
-				console.log(e);
-				
 				if(e.ctrlKey || e.metaKey) {
 					ctrl.setValue(parseFloat(ctrl.defvalue));
 				}
@@ -126,63 +122,65 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 					ctrl.startPosX = e.pageX;
 					ctrl.startPosY = e.pageY;
 					ctrl.startVal = ctrl.value;
-					knb.addEventListener('mousemove', pointermove, true);
-					knb.addEventListener('touchmove', pointermove, true);
+					$window.addEventListener('mousemove', pointermove, true);
+					$window.addEventListener('touchmove', pointermove, true);
 				}
-				knb.addEventListener('mouseup', cancel, true);
-				knb.addEventListener('touchend', cancel, true);
-				knb.addEventListener('touchcancel', cancel, true);
-				knb.press = knb.vtflag = 1;
-				knb.ttflag = 0;
+				
+				$window.addEventListener('mouseup', cancel, true);
+				$window.addEventListener('touchend', cancel, true);
+				$window.addEventListener('touchcancel', cancel, true);
+
+				scope.$apply();
 				
 				showtip();
 				e.preventDefault();            	
-            }
+            };
            
             
             function pointerover(e) {
-                
+               scope.vm.tooltipIsOpen = true;
+               scope.$apply();                
             }
             
             function pointerout(e) {
+               scope.vm.tooltipIsOpen = false;
+               scope.$apply();                
                 
             }
             
-			function pointermove(e) {
+			var pointermove = function(e) {
 
 				e.preventDefault();
 				
 			    var ctrl = scope.vm;
 			    
+			    var shiftKey = e.shiftKey;
 				if(e.touches)
 					e = e.touches[0];
-					
-			    console.log('pointer move: ', e);
 			    
-			    if(scope.vm.lastShift !== e.shiftKey) {
-					ctrl.lastShift = e.shiftKey;
+			    if(ctrl.lastShift !== shiftKey) {
+					ctrl.lastShift = shiftKey;
 					ctrl.startPosX = e.pageX;
 					ctrl.startPosY = e.pageY;
 					ctrl.startVal = ctrl.value;
 				}
+				
 				var offset = (ctrl.startPosY - e.pageY - ctrl.startPosX + e.pageX) * ctrl.sensitivity;
 				
-				var newValue = ctrl.min + ((((ctrl.startVal + (ctrl.max - ctrl.min) * offset / ((e.shiftKey ? 4:1) * 128)) - ctrl.min) / ctrl.ctlStep)|0) * ctrl.ctlStep;
+				var newValue = ctrl.min + ((((ctrl.startVal + (ctrl.max - ctrl.min) * offset / ((shiftKey ? 4:1) * 128)) - ctrl.min) / ctrl.ctlStep)|0) * ctrl.ctlStep;
 				var oldValue = ctrl.value;
 
 	            ctrl.setValue(newValue);
 	            
     			scope.$apply();
+				redraw();
+				
+				showtip();
+
 				if(ctrl.value != oldValue && typeof(ctrl.onChange) === 'function') {
 				    ctrl.onChange();
-				    redraw();
 				}				
-	
-				ctrl.setValue(newValue);
-				
-				redraw();
-
-			}
+			};
 			
             function wheel(e) {
 
@@ -219,11 +217,7 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
             }
             
             var ctrl = scope.vm;
-            
-            knb.addEventListener('click', function() {
-                $log.debug('clicked!');
-            });
-            
+
             knb.addEventListener('DOMMouseScroll', wheel, true);         
             knb.addEventListener('mousewheel', wheel, true);
 		    knb.addEventListener('mouseout',pointerout,false);
@@ -252,8 +246,12 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 			ctrl.startPosX = null;
 			ctrl.startPosY = null;
 			ctrl.startVal = 0;
-			ctrl.enable = !attrs.disable;
-			
+			ctrl.enable = !attrs.defaultValue;
+			ctrl.defvalue = attrs.defaultValue || attrs.value;
+			ctrl.width = attrs.width || attrs.diameter;
+			ctrl.height = attrs.height || attrs.diameter;
+			ctrl.ctlStep = 1;
+			ctrl.sensitivity = parseInt(attrs.sensitivity || 1, 10);
 
 			if(ctrl.step && ctrl.step < 1) {
                 for(var n = ctrl.step ; n < 1; n *= 10)
@@ -293,6 +291,6 @@ function WebaudioKnob($parse, $log, $timeout, viewUrl) {
 }
 
 // love our dependency injection and we are now safe from obfuscation
-WebaudioKnob.$inject = ['$parse', '$log', '$timeout', 'viewUrl'];
+WebaudioKnob.$inject = ['$parse', '$log', '$timeout', '$window', 'viewUrl'];
 
 module.exports = WebaudioKnob;

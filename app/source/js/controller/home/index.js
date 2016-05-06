@@ -8,6 +8,7 @@ function HomeController(alertify) {
     vm.mod = {};
     
     vm.mod.frequency = 0;
+    vm.mod.osc1Tremlo = 0;
     vm.mod.shape = null;
     
     

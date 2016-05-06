@@ -1,28 +1,50 @@
 <div class='synthbox'>
-    <fieldset class='section' style='left:10px;right:10px;width:87px;height:342px;'>
+    <fieldset class='section' style='left:10px;right:10px;width:87px;height:342px;display:inline-block;'>
         <legend class='section-label'>mod</legend>
 
-        <div class='dropdownContainer'>
+        <div class='dropdownContainer' style='top:15px;left:12px;'>
             <div class='dropdownLabel'>shape</div>
-            <ng-dropdown ng-model="vm.mod.shape" items="vm.mod.waveshapes" display-property='name' default-text='--- Select A Waveform ---' on-change='vm.updateVoices()'></ng-dropdown>
+            <ng-dropdown class='dropdownSelect' ng-model="vm.mod.shape" items="vm.mod.waveshapes" display-property='name' default-text='--- Select A Waveform ---' on-change='vm.updateVoices()'></ng-dropdown>
         </div>
         
+
     	<div class="knob-container">
             <webaudio-knob value='vm.mod.frequency' 
                            on-change='vm.updateVoices()' 
-                           units=''
+                           units='Hz'
                            step='1'
                            min='0'
                            max='10'
                            digits='0'
                            src='/build/images/LittlePhatty.png'
                            sprites='100'
-                           diameter='64'
                            height='80'
                            width='80'
+                           diameter='64'
+                           sensitivity='2'
                            uib-tooltip='freq'></webaudio-knob>
             <div class='knob-label' style='top:68px;width:80px;'>freq</div>
         </div>
+        
+        <div class="knob-container">
+            <webaudio-knob value='vm.mod.osc1Tremlo' 
+                           on-change='vm.updateVoices()' 
+                           units='Hz'
+                           step='1'
+                           min='0'
+                           max='100'
+                           digits='0'
+                           src='/build/images/LittlePhatty.png'
+                           sprites='100'
+                           diameter='64'
+                           height='80'
+                           width='80'
+                           sensitivity='2'
+                           uib-tooltip='osc1 tremolo'></webaudio-knob>
+            <div class='knob-label'>osc1 tremolo</div>            
+        </div>
+        
+
         
     </fieldset>
 </div>
