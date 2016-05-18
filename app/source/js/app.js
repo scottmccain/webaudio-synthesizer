@@ -8,6 +8,9 @@ require('angular-bootstrap-npm');
 require('ngalertify');
 require('angular-animate');
 
+require('./audiolib');
+
+
 
 var app = angular.module('angular-application', ['ui.router', 'ui.bootstrap', 'ngAlertify', require('angular-resource'), 'ngAnimate']);
 
